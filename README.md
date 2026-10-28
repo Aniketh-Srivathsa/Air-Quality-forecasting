@@ -46,17 +46,17 @@ The diagram below describes the paper's conceptual data path. Only offline CSV p
 
 ```mermaid
 flowchart LR
-  subgraph Paper architecture (conceptual; not built)
-    A[Arduino Uno sensor node] --> B[MQ-2 gas sensor]
-    A --> C[MQ-135 gas sensor]
-    A --> D[Sharp dust sensor]
-    A --> E[GSM communication]
-    E --> F[EC2 server: receive and aggregate]
+  subgraph paper["Paper architecture (conceptual; not built)"]
+    A["Arduino Uno sensor node"] --> B["MQ-2 gas sensor"]
+    A --> C["MQ-135 gas sensor"]
+    A --> D["Sharp dust sensor"]
+    A --> E["GSM communication"]
+    E --> F["EC2 server: receive and aggregate"]
   end
-  G[OpenCity substitute CSV\nJayanagar, 2024–25] --> H[Hourly preprocessing]
-  H --> I[Univariate Keras LSTM]
-  I --> J[Streamlit dashboard\nmetrics and 5-hour forecast]
-  F -. not implemented .-> J
+  G["OpenCity substitute CSV<br/>Jayanagar, 2024–25"] --> H["Hourly preprocessing"]
+  H --> I["Univariate Keras LSTM"]
+  I --> J["Streamlit dashboard<br/>metrics and 5-hour forecast"]
+  F -. "not implemented" .-> J
 ```
 
 Arduino Uno nodes, MQ-2, MQ-135, Sharp dust sensors, GSM communication, the EC2 listener/API, on-premises model training/deployment and the paper's original data feeds are not reproduced. This project makes no claims about physical sensor accuracy or WSN operation.
@@ -72,3 +72,4 @@ data/raw/...
 ```
 
 See [`reports/methodology.md`](reports/methodology.md) for step-by-step comparison and deviations. Tests cover weekly imputation, chronological split boundaries, recursive forecasts and evaluation metrics.
+
