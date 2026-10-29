@@ -38,7 +38,7 @@ python -c "from air_quality_forecasting.data import download_dataset; print(down
 4. Fit one univariate model per selected pollutant. Weather fields are deliberately excluded, consistent with the paper's statement that weather is not directly incorporated in its forecasting model.
 5. Use 24 previous hourly values (an explicit assumption because the paper does not report sequence length). MinMax scaling is fit on the training segment only.
 6. Split in time order: first 67% training, final 33% test. Train the paper's LSTM(64, ReLU, sequences), LSTM(32, ReLU), Dense(1, linear) with Adam/MSE for up to 50 epochs. Early stopping monitors a tail validation slice from training data and restores best weights.
-7. Inverse-transform predictions, report test RMSE and `100 × RMSE / max(actual test)`, then recursively forecast five hours.
+7. Inverse-transform predictions, report test RMSE and `100 × RMSE / max(actual test)` (relative RMSE, not an accuracy percentage), plus supplementary MAE and R² regression metrics; then recursively forecast five hours. Classification accuracy is not defined for continuous-value regression.
 
 ## Wireless sensor network scope
 

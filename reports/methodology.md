@@ -19,7 +19,7 @@ Reference: S. V. Belavadi, S. Rajagopal, R. Ranjani, and R. Mohan, “Air Qualit
 | Training duration / stopping | Paper discusses training but does not specify maximum epoch count or stopping rule in the reported methodology | Up to 50 epochs with early stopping; validation is the final 10% of training sequences; patience defaults to 5 | **Implementation choice** required by this project request. |
 | Scaling | No scaling procedure specified in the paper | MinMaxScaler fit only on training observations; inverse transformed before metrics | **Implementation choice** to stabilize optimization without test leakage. |
 | Forecast horizon | Forecasts next five hours described | Five recursively fed predictions | Horizon follows paper; recursive feedback is explicitly requested here. |
-| Metrics | RMSE and RMSE as percentage of pollutant maximum during observed period | Test RMSE and 100 × RMSE / maximum actual test value | Requested test-set definition is used; denominator window therefore differs if paper's full observation period is meant. Units remain source units, not paper ppm. |
+| Metrics | RMSE and RMSE as percentage of pollutant maximum during observed period | Test RMSE and 100 × RMSE / maximum actual test value, plus supplementary MAE and R² | Requested test-set definition is used; denominator window therefore differs if paper's full observation period is meant. MAE/R² are additional regression metrics, not paper results. Units remain source units, not paper ppm. Classification accuracy is not applicable. |
 | Hardware/platform | Arduino Uno, MQ-2, MQ-135, Sharp dust sensor, GSM, EC2 server, APIs and web front end | No hardware or cloud ingestion; local dashboard only | Conceptual diagram only; explicitly not implemented. |
 
 ## Assumptions and safe behavior
@@ -29,7 +29,7 @@ Reference: S. V. Belavadi, S. Rajagopal, R. Ranjani, and R. Mohan, “Air Qualit
 - Pollutant columns are inferred from numeric-valued columns after excluding timestamp, station identifiers, and obvious weather/metadata names (including common abbreviations AT/RH/WS/WD/RF/SR/BP). This accommodates source schema variation, but users should inspect the detected list.
 - The hourly grid spans first to last valid timestamp; unobserved hours become missing and are imputed by the weekly rule/mean.
 - If a series has no observed values, preprocessing raises a clear error. If there are too few observations for a split plus lookback, training stops with a clear error.
-- Percentage RMSE is undefined (NaN in internal result; shown as undefined in UI) if maximum actual test value is zero.
+- Relative RMSE (`100 × RMSE / maximum actual test value`) is an error measure, not accuracy; it is undefined if the maximum actual test value is zero. R² is undefined for a test set containing fewer than two values and may be negative.
 
 ## Interpretation
 

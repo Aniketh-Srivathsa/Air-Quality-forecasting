@@ -62,6 +62,8 @@ def test_metrics_rmse_and_percentage_rmse():
     scores = evaluate([2, 4], [1, 2])
     assert scores["rmse"] == pytest.approx(np.sqrt(2.5))
     assert scores["percentage_rmse"] == pytest.approx(100 * np.sqrt(2.5) / 4)
+    assert scores["mae"] == pytest.approx(1.5)
+    assert scores["r2"] == pytest.approx(-1.5)
 
 def test_percentage_rmse_defined_for_zero_maximum():
     assert np.isnan(evaluate([0, 0], [1, 1])["percentage_rmse"])

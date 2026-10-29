@@ -132,10 +132,12 @@ if st.button("Train LSTM and forecast five hours", type="primary"):
         progress.progress(1.0, text=f"Training complete · {len(result.history.epoch)} epoch(s)")
         status.success(f"Chronological split: {result.split_index:,} training hours and {len(result.actual):,} test targets.")
         scores = evaluate(result.actual, result.predicted)
-        m1, m2, m3 = st.columns(3)
+        m1, m2, m3, m4, m5 = st.columns(5)
         m1.metric("Test RMSE", f"{scores['rmse']:.4g}")
-        m2.metric("Percentage RMSE", "undefined (max actual is zero)" if pd.isna(scores["percentage_rmse"]) else f"{scores['percentage_rmse']:.2f}%")
-        m3.metric("Test observations", f"{len(result.actual):,}")
+        m2.metric("Relative RMSE (not accuracy)", "undefined" if pd.isna(scores["percentage_rmse"]) else f"{scores['percentage_rmse']:.2f}%")
+        m3.metric("Test MAE", f"{scores['mae']:.4g}")
+        m4.metric("Test R²", "undefined" if pd.isna(scores["r2"]) else f"{scores['r2']:.4f}")
+        m5.metric("Test observations", f"{len(result.actual):,}")
         fig = go.Figure()
         fig.add_trace(go.Scatter(x=result.test_index, y=result.actual, name="Actual", mode="lines"))
         fig.add_trace(go.Scatter(x=result.test_index, y=result.predicted, name="Predicted", mode="lines"))
@@ -156,7 +158,7 @@ if st.button("Train LSTM and forecast five hours", type="primary"):
 
 with st.expander("Model architecture and methodology"):
     st.code("Input: (24 hourly observations, 1 pollutant)\nLSTM(64, activation='relu', return_sequences=True)\nLSTM(32, activation='relu')\nDense(1, activation='linear')\nLoss: mean squared error · Optimizer: Adam")
-    st.markdown("The paper describes univariate hourly pollutant forecasting; weather is not directly used. This implementation uses a 24-hour lookback because the paper does not publish the sequence length. Training/test data are split in chronological order (67%/33%). Scaling is fit on training observations only. Early stopping uses a tail validation slice from the training sequences; the test set is held back until final evaluation. Five future hours are generated recursively.")
+    st.markdown("The paper describes univariate hourly pollutant forecasting; weather is not directly used. This implementation uses a 24-hour lookback because the paper does not publish the sequence length. Training/test data are split in chronological order (67%/33%). Scaling is fit on training observations only. Early stopping uses a tail validation slice from the training sequences; the test set is held back until final evaluation. Five future hours are generated recursively. Test RMSE and relative RMSE follow the requested paper-informed metrics; MAE and R² are supplementary regression measures. Classification accuracy does not apply to continuous pollutant forecasts.")
 with st.expander("Provenance, assumptions and limitations"):
     st.markdown(f"""
 **Historical data:** [Jayanagar 5th Block KSPCB 2024–25 CSV]({DATA_URL}) from OpenCity. It is substitute data and differs in location/time and collection from the paper's 2019 experimental data (Amaravati APPCB and Bengaluru WSN/government observations).
