@@ -12,6 +12,7 @@ NON_POLLUTANT_ABBREVIATIONS = {"at", "rh", "ws", "wd", "rf", "tot-rf", "sr", "bp
 class PreparedData:
     hourly: pd.DataFrame
     observed_hourly: pd.DataFrame
+    imputation_details: pd.DataFrame
     pollutants: list[str]
     timestamp_column: str
     station_column: str | None
@@ -108,8 +109,34 @@ def prepare_data(raw: pd.DataFrame, station: str | None = None) -> PreparedData:
     observed_hourly = frame[pollutants].resample("h").mean()
     hourly_missing = {col: int(observed_hourly[col].isna().sum()) for col in pollutants}
     hourly = observed_hourly.copy()
+    imputation_records = []
     for col in pollutants:
-        hourly[col] = impute_weekly(hourly[col])
+        original = hourly[col].copy()
+        missing_mask = original.isna()
+        weekly_source = original.shift(168)
+        weekly_fill = missing_mask & weekly_source.notna()
+        mean_fill = missing_mask & weekly_source.isna()
+        for timestamp in original.index[weekly_fill]:
+            source_timestamp = timestamp - pd.Timedelta(hours=168)
+            imputation_records.append({
+                "Timestamp": timestamp,
+                "Pollutant": col,
+                "Imputed value": float(weekly_source.loc[timestamp]),
+                "Method": "Same hour 168 hours earlier",
+                "Source timestamp": source_timestamp,
+                "Source value": float(weekly_source.loc[timestamp]),
+            })
+        fallback_mean = float(original.mean()) if original.notna().any() else np.nan
+        for timestamp in original.index[mean_fill]:
+            imputation_records.append({
+                "Timestamp": timestamp,
+                "Pollutant": col,
+                "Imputed value": fallback_mean,
+                "Method": "Series mean (no weekly source)",
+                "Source timestamp": pd.NaT,
+                "Source value": fallback_mean,
+            })
+        hourly[col] = impute_weekly(original)
     if hourly.empty:
         raise ValueError("No hourly observations remain after parsing timestamps.")
     summary = {
@@ -120,5 +147,8 @@ def prepare_data(raw: pd.DataFrame, station: str | None = None) -> PreparedData:
         "hourly_values_imputed": hourly_missing.copy(),
         "missing_after_imputation": {c: int(hourly[c].isna().sum()) for c in pollutants},
     }
-    return PreparedData(hourly, observed_hourly, pollutants, time_col, station_col, selected_station, summary)
+    imputation_details = pd.DataFrame(imputation_records, columns=[
+        "Timestamp", "Pollutant", "Imputed value", "Method", "Source timestamp", "Source value"
+    ])
+    return PreparedData(hourly, observed_hourly, imputation_details, pollutants, time_col, station_col, selected_station, summary)
 

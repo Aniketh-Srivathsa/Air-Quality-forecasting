@@ -22,6 +22,8 @@ python -m streamlit run app.py
 
 TensorFlow wheels are Python-version/platform dependent; use a 64-bit Python 3.11–3.13 installation. If PowerShell blocks activation, run `Set-ExecutionPolicy -Scope Process Bypass` in that terminal and activate again.
 
+The hourly-series chart separates available observations/estimates from imputed points. Expand “Inspect imputed values and their sources” to see whether each value came from 168 hours earlier or the series-mean fallback, along with the corresponding source time/value. A weekly source can legitimately differ from neighboring hours.
+
 The dashboard has two separate sources: the original substitute CSV, and **Recent CAMS estimates (near Jayanagar)** for a current-date forecast. Current mode fetches up to 92 days from the Open-Meteo Air Quality API, uses completed hourly history only, and makes a five-hour recursive forecast beyond the latest returned hour. It is gridded model output, **not a ground-station or hardware sensor observation**. API access is subject to availability; no API key is needed for ordinary non-commercial use. Timestamps are UTC, and estimates may be spatially coarse. The dashboard caches the response for 30 minutes and has a refresh button. Attribute [Open-Meteo Air Quality API](https://open-meteo.com/en/docs/air-quality-api) and [Copernicus CAMS](https://atmosphere.copernicus.eu/). This mode is distinct from the historical 2024–25 CSV and never mixes the sources.
 
 The dashboard downloads the historical source if it is missing. To download it separately:

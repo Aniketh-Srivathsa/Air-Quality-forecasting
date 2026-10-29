@@ -109,3 +109,22 @@ def test_current_estimate_loader_reports_short_history(monkeypatch):
     monkeypatch.setattr(data.requests, "get", lambda *args, **kwargs: FakeResponse())
     with pytest.raises(ValueError, match="only .* completed hourly rows"):
         data.load_current_estimates()
+
+
+def test_preprocessing_exposes_weekly_and_mean_imputation_sources():
+    from air_quality_forecasting.preprocessing import prepare_data
+
+    timestamps = pd.date_range("2025-01-01", periods=180, freq="h", tz="UTC")
+    values = np.full(len(timestamps), 10.0)
+    values[2] = 10.0
+    values[0] = np.nan
+    values[170] = np.nan
+    prepared = prepare_data(pd.DataFrame({"Timestamp": timestamps.astype(str), "PM10": values}))
+    weekly = prepared.imputation_details.set_index("Timestamp").loc[timestamps[170]]
+    fallback = prepared.imputation_details.set_index("Timestamp").loc[timestamps[0]]
+    assert weekly["Method"] == "Same hour 168 hours earlier"
+    assert weekly["Source timestamp"] == timestamps[2]
+    assert weekly["Imputed value"] == pytest.approx(10.0)
+    assert fallback["Method"] == "Series mean (no weekly source)"
+    assert fallback["Imputed value"] == pytest.approx(np.nanmean(values))
+

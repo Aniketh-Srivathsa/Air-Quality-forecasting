@@ -113,6 +113,18 @@ if isinstance(selected_dates, (tuple, list)) and len(selected_dates) == 2:
             f"{total_imputed:,} of {len(prepared.hourly):,} hours ({100 * total_imputed / len(prepared.hourly):.1f}%) "
             f"were imputed for this pollutant across the full dataset."
         )
+        with st.expander("Inspect imputed values and their sources"):
+            st.caption("Weekly imputations copy the same hour 168 hours earlier; if that earlier estimate differs from nearby CAMS hours, the orange point can be far away. The fallback is the pollutant series mean.")
+            details = prepared.imputation_details
+            if not details.empty:
+                details = details[details["Pollutant"] == pollutant]
+                details = details[(details["Timestamp"].dt.date >= range_start) & (details["Timestamp"].dt.date <= range_end)]
+                if details.empty:
+                    st.info("No imputed values for this pollutant in the selected date range.")
+                else:
+                    st.dataframe(details.drop(columns="Pollutant"), use_container_width=True, hide_index=True)
+            else:
+                st.info("No values required imputation for this dataset.")
     else:
         st.info("Choose both a start and end date to view the hourly series.")
 else:
