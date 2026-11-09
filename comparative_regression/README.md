@@ -18,23 +18,34 @@ one hour recurse on the model’s own PM2.5 estimates, so uncertainty grows with
 the horizon. This is a current-data demonstration, not an exact replication of
 the paper’s historical experiment or reported scores.
 
-## Run
+## Run the graphical dashboard
 
-Requires Python 3.10+ and internet access.
+From the repository root in Command Prompt or PowerShell:
 
-```powershell
-python -m venv .venv
-.venv\Scripts\Activate.ps1
+\`\`\`powershell
+cd comparative_regression
 python -m pip install -e .
+python -m streamlit run app.py
+\`\`\`
+
+The dashboard lets you select one of the five cities and a 1–119 hour horizon.
+It charts validation MAE, RMSE, and R² for all four regressors, highlights the
+lowest-MAE model, and plots that model's recursive PM2.5 forecast. Use
+**Refresh API data** to clear the 30-minute cache.
+
+Cities supported: \`beijing\`, \`chengdu\`, \`guangzhou\`, \`shanghai\`, \`shenyang\`.
+The API requires internet access and no key for ordinary non-commercial use.
+
+## Command-line mode
+
+\`\`\`powershell
+cd comparative_regression
 python -m air_quality --city beijing --hours 24
-```
+\`\`\`
 
-Cities supported: `beijing`, `chengdu`, `guangzhou`, `shanghai`, `shenyang`.
-The default is Beijing. The forecast horizon can be 1–119 hours.
-
-The command prints each model’s chronological validation metrics and the
-selected model’s forecast. It writes the fitted model to `models/` and the
-comparison and hourly forecast to `reports/`.
+The command prints each model's validation metrics and the selected forecast.
+It writes the fitted model to \`models/\` and comparison/forecast CSV files to
+\`reports/\`.
 
 ## Method
 
@@ -49,4 +60,3 @@ median-imputed within each model pipeline.
 Ameer, S. et al. (2019). “Comparative Analysis of Machine Learning Techniques
 for Predicting Air Quality in Smart Cities.” *IEEE Access*, 7, 128325–128338.
 https://doi.org/10.1109/ACCESS.2019.2925082
-

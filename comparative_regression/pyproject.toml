@@ -5,14 +5,16 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "smart-city-air-quality"
 version = "0.1.0"
-description = "Reproduction of four regression models for hourly PM2.5 prediction"
+description = "Regression model comparison and Streamlit dashboard for hourly PM2.5 prediction"
 requires-python = ">=3.10"
 dependencies = [
   "joblib>=1.3",
   "numpy>=1.24",
   "pandas>=2.0",
+  "plotly>=5.18",
   "requests>=2.31",
   "scikit-learn>=1.3",
+  "streamlit>=1.30",
 ]
 
 [project.scripts]
@@ -20,4 +22,3 @@ air-quality = "air_quality:main"
 
 [tool.setuptools]
 py-modules = ["air_quality"]
-
